@@ -95,6 +95,8 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
 uart = UART(1, baudrate = 115200, pins = ('P3','P4'))
 uart.init(115200, bits = 8, parity = None, stop = 1)
 parsedReadings = parserGen.output(uart)
+
+
 routeHandlers = [ ( '/read', 'GET',  _httpHandlerNEOGet1s ),
                 ( "/test",	"GET",	_httpHandlerTestGet ),
                 ( "/test",	"POST",	_httpHandlerTestPost )]

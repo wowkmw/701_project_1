@@ -29,11 +29,6 @@ AIO_RANDOMS_FEED = "fipy/randoms"
  
 
 
-uart2 = UART(1, baudrate = 115200, pins = ('P3','P4'))
-uart2.init(115200, bits = 8, parity = None, stop = 1)
-parsedReadings = parserGen.output(uart2)
-
-
 # FUNCTIONS
 
 # Function to respond to messages from Adafruit IO
@@ -75,7 +70,7 @@ def send_readings():
     #     return; # Too soon since last one sent.
 
     try:
-        latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings.__next__() 
+        latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings2.__next__() 
     except:
         latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
 
@@ -116,7 +111,9 @@ client.subscribe(AIO_CONTROL_FEED)
 
 print("Connected to %s, subscribed to %s topic" % (AIO_SERVER, AIO_CONTROL_FEED))
 
-
+uart2 = UART(1, baudrate = 115200, pins = ('P3','P4'))
+uart2.init(115200, bits = 8, parity = None, stop = 1)
+parsedReadings2 = parserGen.output(uart2)
 
 pycom.rgbled(0x00ff00) # Status green: online to Adafruit IO
 

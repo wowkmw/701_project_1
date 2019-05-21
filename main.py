@@ -9,5 +9,7 @@ if __name__=='__main__':
     wlan = WLAN()
     wlan.init(mode=WLAN.AP, ssid='testf9p701', auth=(WLAN.WPA2, 'testf9p701'), channel=1, antenna=WLAN.INT_ANT)
     pycom.heartbeat(False)
-    pycom.rgbled(0x007f7f)
+    pycom.rgbled(0x007f7f) #light blue
+    print(">>FiPy set to AP mode<<")
+    import allInOne
     

@@ -211,6 +211,42 @@ def switchToMQTT1(readGen):
 
         print("MQTT stopped")
 
+def switchToMQTT2():
+
+    # Setup thingsboard connection
+    THINGSBOARD_HOST = '203.101.225.130'
+    QUT01_ACCESS_TOKEN = 'test12345'
+
+    QUT01_location = {'lat': -27.473603, 'lon': 153.021806}
+
+    QUT01_mqtt_conn = mqtt.Client()
+    # Set access token
+    QUT01_mqtt_conn.username_pw_set(QUT01_ACCESS_TOKEN)
+
+    #Connect to Thingsboard using default MQTT port and 60 seconds keepalive intervals
+    QUT01_mqtt_conn.connect(THINGSBOARD_HOST, 1883, 60)	# Sam: you need to make sure port 1883 of your thingsboard server is open
+    QUT01_mqtt_conn.loop_start()
+
+    # Data capture and upload interval in seconds
+    INTERVAL=2							# Sam: this is how often the data will be uploaded, change if needed
+    delaytime = 1.0
+    time_record = time.time()
+
+    try:
+        while True:
+            QUT01_location['lat'] = -27.473603 + randrange(-1, 1)*0.01
+            QUT01_location['lon'] = 153.021806 + randrange(-1, 1)*0.01
+            time_now = time.time()
+            if (time_now - time_record) > INTERVAL:
+                QUT01_mqtt_conn.publish('v1/devices/me/attributes', json.dumps(QUT01_location), 1)
+                # QUT01_mqtt_conn.publish('v1/devices/me/telemetry', json.dumps(QUT01_location), 1)
+                time_record = time_now
+            else:
+                time.sleep(delaytime)
+
+    except KeyboardInterrupt: 		# catches the ctrl-c command, which breaks the loop above
+        print("Continuous polling stopped")
+
 pycom.rgbled(0xff0000) #red
 time.sleep(1)
 
@@ -242,7 +278,8 @@ while True:
         srv.Stop()
         print(">>local server stopped<<")
         time.sleep(1)
-        switchToMQTT1(parsedReadings)
         break
     else:
         time.sleep(1)
+print(">>changing WIFI mode<<")
+switchToMQTT1(parsedReadings)

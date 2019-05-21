@@ -106,8 +106,9 @@ while True:
     cond = condf.read()
     condf.close()
     if cond == "yes":
+        print("Stopping server...")
         pycom.rgbled(0xff0000) #red
-        uart.deinit()
+        # uart.deinit()
         time.sleep(1)
         srv.Stop()
         time.sleep(1)
