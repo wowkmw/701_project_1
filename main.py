@@ -2,7 +2,6 @@
 # import readSrv
 from network import WLAN
 import pycom
-# hahaha
 # from machine import SD
 # sd = SD()
 # os.mount(sd, '/sd')
