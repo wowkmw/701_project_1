@@ -1,6 +1,5 @@
 import network
 import pycom
-import allInOne
 # from machine import SD
 # sd = SD()
 # os.mount(sd, '/sd')
@@ -10,6 +9,6 @@ if __name__=='__main__':
     pycom.heartbeat(False)
     pycom.rgbled(0x007f7f) #light blue
     print(">>FiPy set to AP mode<<")
-    allInOne.main()
+    import allInOne
  
     

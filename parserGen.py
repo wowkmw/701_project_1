@@ -13,7 +13,7 @@ def dataParse(reading):
             Lat = str(dir+' '+dms)
             return Lat
         except:
-            return 'N/A'
+            return 0
     def parseLon(temp, temp2):
         try:
             raw = list(str(int(float(temp)*10000000)))
@@ -25,7 +25,7 @@ def dataParse(reading):
             Lon = str(dir+' '+dms)
             return Lon
         except:
-            return 'N/A'
+            return 0
     def GPSQ(arg):
         try:
             switcher = {
@@ -90,7 +90,7 @@ def dataParse(reading):
         Lat = parseLat(temp1[3],temp1[4])
         Lon = parseLon(temp1[5],temp1[6])
         gpsQ = GPSQ(int(temp3[6]))
-        LatLon = Lat +' ; '+ Lon
+        LatLon = str(Lat) +' ; '+ str(Lon)
         velocity = velo(temp1)
         height = height(temp3)
         GMT = timeP(temp1)
@@ -98,7 +98,8 @@ def dataParse(reading):
         uniqsatNum = countSats(temp4, temp5)
         return LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum
     except:
-        LatLon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "Sensor Error"
+        LatLon = "0;0"
+        velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "Sensor Error"
         return LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum
 
 def output(UT):
