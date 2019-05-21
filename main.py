@@ -3,7 +3,7 @@
 from network import WLAN
 import pycom
 
-# from machine import SD
+# from machine import SD ggwp
 # sd = SD()
 # os.mount(sd, '/sd')
 if __name__=='__main__':
