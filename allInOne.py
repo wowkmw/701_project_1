@@ -247,39 +247,44 @@ def switchToMQTT2():
     except KeyboardInterrupt: 		# catches the ctrl-c command, which breaks the loop above
         print("Continuous polling stopped")
 
-pycom.rgbled(0xff0000) #red
-time.sleep(1)
-
-uart = UART(1, baudrate = 115200, pins = ('P3','P4'))
-uart.init(115200, bits = 8, parity = None, stop = 1)
-parsedReadings = parserGen.output(uart)
-
-routeHandlers = [ ( '/read', 'GET',  _httpHandlerNEOGet1s ),
-                ( "/test",	"GET",	_httpHandlerTestGet ),
-                ( "/test",	"POST",	_httpHandlerTestPost )]
-srv = MicroWebSrv(routeHandlers=routeHandlers, webPath = '/flash/www/')
-time.sleep(0.25)
-srv.Start(threaded = True)
-pycom.rgbled(0x00ff00) #green
-print(">>local webServer started<<")
-time.sleep(0.25)
-mf = open("status.txt", "w")
-mf.close()
-while True:
+def main():
+    print(">>starting web server<<")
+    pycom.rgbled(0xff0000) #red
     time.sleep(1)
-    condf = open("status.txt", "r")
-    cond = condf.read()
-    condf.close()
-    if cond == "yes":
-        print(">>stopping server<<")
-        pycom.rgbled(0xff0000) #red
-        # uart.deinit()
+
+    uart = UART(1, baudrate = 115200, pins = ('P3','P4'))
+    uart.init(115200, bits = 8, parity = None, stop = 1)
+    parsedReadings = parserGen.output(uart)
+
+    routeHandlers = [ ( '/read', 'GET',  _httpHandlerNEOGet1s ),
+                    ( "/test",	"GET",	_httpHandlerTestGet ),
+                    ( "/test",	"POST",	_httpHandlerTestPost )]
+    srv = MicroWebSrv(routeHandlers=routeHandlers, webPath = '/flash/www/')
+    time.sleep(0.25)
+    srv.Start(threaded = True)
+    pycom.rgbled(0x00ff00) #green
+    print(">>local webServer started<<")
+    time.sleep(0.25)
+    mf = open("status.txt", "w")
+    mf.close()
+    while True:
         time.sleep(1)
-        srv.Stop()
-        print(">>local server stopped<<")
-        time.sleep(1)
-        break
-    else:
-        time.sleep(1)
-print(">>changing WIFI mode<<")
-switchToMQTT1(parsedReadings)
+        condf = open("status.txt", "r")
+        cond = condf.read()
+        condf.close()
+        if cond == "yes":
+            print(">>stopping server<<")
+            pycom.rgbled(0xff0000) #red
+            # uart.deinit()
+            time.sleep(1)
+            srv.Stop()
+            print(">>local server stopped<<")
+            time.sleep(1)
+            break
+        else:
+            time.sleep(1)
+    print(">>changing WIFI mode<<")
+    switchToMQTT1(parsedReadings)
+
+if __name__=='__main__':
+    main()
