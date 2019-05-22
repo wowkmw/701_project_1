@@ -188,11 +188,16 @@ def switchtoMQTT2():
             try:
                 latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings.__next__() 
             except:
-                latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "0;0"
-            temp1 = latlon.split(";")
-            Lat = float(temp1[0])
-            Lon = float(temp1[1])
-            location = {'lat': float(Lat), 'lon': float(Lon)}
+                latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
+            if 'Error' in latlon:
+                location = {'lat': latlon, 'lon': latlon}
+            elif 'N/A' in latlon:
+                location = {'lat': latlon, 'lon': latlon}
+            else:
+                temp1 = latlon.split(";")
+                Lat = float(temp1[0].replace("S","-").replace("N",""))
+                Lon = float(temp1[1].replace("E","").replace("W","-"))
+                location = {'lat': float(Lat), 'lon': float(Lon)}
             client2.publish(topic='v1/devices/me/attributes', msg=json.dumps(location))
             print("coordinate sent: {0}".format(latlon))
             time.sleep(2.5)
@@ -257,5 +262,5 @@ print(wlan.ifconfig()) #
 print(">>connected to hotspot<<")
 pycom.rgbled(0xff00f4) #ligt purple, wifi connected
 time.sleep(2)
-switchToMQTT1()
-# switchtoMQTT2()
+# switchToMQTT1()
+switchtoMQTT2()

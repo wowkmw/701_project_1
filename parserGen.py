@@ -9,11 +9,11 @@ def dataParse(reading):
             minutes = float(raw[2]+raw[3])/60
             seconds = float(raw[4]+raw[5]+raw[6]+raw[7]+raw[8]+raw[9]+raw[10])/100000/(60*60)
             dms = str(degree + minutes + seconds)
-            dir = temp2
-            Lat = str(dir+' '+dms)
+            dirr = temp2
+            Lat = str(dirr+dms)
             return Lat
         except:
-            return 0
+            return 'N/A'
     def parseLon(temp, temp2):
         try:
             raw = list(str(int(float(temp)*10000000)))
@@ -21,11 +21,11 @@ def dataParse(reading):
             minutes = float(raw[3]+raw[4])/60
             seconds = float(raw[5]+raw[6]+raw[7]+raw[8]+raw[9]+raw[10]+raw[11])/100000/(60*60)
             dms = str(degree + minutes + seconds)
-            dir = temp2
-            Lon = str(dir+' '+dms)
+            dirr = temp2
+            Lon = str(dirr+dms)
             return Lon
         except:
-            return 0
+            return 'N/A'
     def GPSQ(arg):
         try:
             switcher = {
@@ -90,7 +90,7 @@ def dataParse(reading):
         Lat = parseLat(temp1[3],temp1[4])
         Lon = parseLon(temp1[5],temp1[6])
         gpsQ = GPSQ(int(temp3[6]))
-        LatLon = str(Lat) +' ; '+ str(Lon)
+        LatLon = Lat +' ; '+ Lon
         velocity = velo(temp1)
         height = height(temp3)
         GMT = timeP(temp1)
@@ -98,8 +98,7 @@ def dataParse(reading):
         uniqsatNum = countSats(temp4, temp5)
         return LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum
     except:
-        LatLon = "0;0"
-        velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "Sensor Error"
+        LatLon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "Sensor Error"
         return LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum
 
 def output(UT):
@@ -121,4 +120,4 @@ def output(UT):
                 print("Error")    
         pycom.rgbled(0x00ff00)
         LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = dataParse(tempStore)
-        yield LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum
+        yield LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum # generate readings

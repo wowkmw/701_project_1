@@ -9,6 +9,6 @@ if __name__=='__main__':
     pycom.heartbeat(False)
     pycom.rgbled(0x007f7f) #light blue
     print(">>FiPy set to AP mode<<")
-    import allInOne2
+    import allInOne
  
     
