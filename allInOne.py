@@ -84,9 +84,7 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
         mf.write("yes")
         mf.close()
 
-def switchToMQTT1():
-   
-
+def switchToParallelMQTT():
     # BEGIN SETTINGS
     AIO_CLIENT_ID = "Charles"
     AIO_SERVER = "203.101.227.137"
@@ -96,10 +94,12 @@ def switchToMQTT1():
     AIO_CONTROL_FEED = "fipy/test"
     AIO_RANDOMS_FEED = "fipy/randoms"
 
+    # Setup thingsboard connection
+    THINGSBOARD_HOST = '203.101.225.130'
+    QUT01_ACCESS_TOKEN = 'test12345'
+
     # FUNCTIONS
-
     # Function to respond to messages from Adafruit IO
-
     def sub_cb(topic, msg):          # sub_cb means "callback subroutine"
         print((topic, msg))          # Outputs the message that was received. Debugging use.
 
@@ -113,21 +113,33 @@ def switchToMQTT1():
             print("Unknown message") # ... do nothing but output that it happened.  
 
     def send_readings():
-        # if ((time.ticks_ms() - last_random_sent_ticks) < RANDOMS_INTERVAL):
-        #     return; # Too soon since last one sent.
-
         try:
             latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings.__next__() 
         except:
             latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
 
         gnssReadings = "Laitude and Longitude: {0},  Velocity: {1}, Orthometric height: {2}, Time in GMT: {3}, GPS Quality indicator: {4}, Number of active satellites: {5}, PDOP:{6} HDOP:{7} VDOP:{8}"\
-            .format(latlon, velocity, gpsQ, height, GMT, uniqsatNum, PDOP, HDOP, VDOP)
-        print("Publishing: {0} to {1} ... ".format(gnssReadings, AIO_RANDOMS_FEED), end='')
+            .format(latlon, velocity, gpsQ, height, GMT, uniqsatNum, PDOP, HDOP, VDOP)       
 
+        if 'Error' in latlon:
+            location = {'lat': latlon, 'lon': latlon}
+
+        elif 'N/A' in latlon:
+            location = {'lat': latlon, 'lon': latlon}
+
+        else:
+            temp1 = latlon.split(";")
+            Lat = float(temp1[0].replace("S","-").replace("N",""))
+            Lon = float(temp1[1].replace("E","").replace("W","-"))
+            location = {'lat': float(Lat), 'lon': float(Lon)}
+        
         try:
+            print("Publishing: {0} to {1} ... ".format(gnssReadings, AIO_RANDOMS_FEED), end='')
             client.publish(topic=AIO_RANDOMS_FEED, msg=str(gnssReadings))
             print("DONE")
+            time.sleep(0.5)
+            client2.publish(topic='v1/devices/me/attributes', msg=json.dumps(location))
+            print("coordinate sent: {0}".format(latlon))
 
         except Exception:
             print("FAILED")
@@ -135,6 +147,13 @@ def switchToMQTT1():
         finally:
             print("------------------------------------------------------------------------------")
 
+    client2 = MQTTClient(client_id="test", server=THINGSBOARD_HOST, port=1883, user=QUT01_ACCESS_TOKEN, password=QUT01_ACCESS_TOKEN, keepalive=60)
+
+    #Connect to Thingsboard using default MQTT port and 60 seconds keepalive intervals
+    client2.connect()
+
+    print(">>>connected to things platform<<<")
+    pycom.rgbled(0x00ff00) #green
     # Use the MQTT protocol to connect to Adafruit IO
     client = MQTTClient(AIO_CLIENT_ID, AIO_SERVER, AIO_PORT, AIO_USER, AIO_KEY)
 
@@ -145,9 +164,7 @@ def switchToMQTT1():
     print("Connected to %s, subscribed to %s topic" % (AIO_SERVER, AIO_CONTROL_FEED))
     pycom.rgbled(0x00ff00) # Status green: online to Adafruit IO  
 
-    try:                      # Code between try: and finally: may cause an error
-                            # so ensure the client disconnects the server if
-                            # that happens.
+    try:
         while True:              # Repeat this loop forever
             client.check_msg()# Action a message if one is received. Non-blocking.
             send_readings()     # Send current GNSS readings
@@ -162,7 +179,7 @@ def switchToMQTT1():
         global wlan # add globale so that wlan can be modified
         wlan.disconnect()
         wlan = None
-        pycom.rgbled(0x000022)# Status blue: stopped
+        pycom.rgbled(0x000022) # Status blue: stopped
         print("MQTT stopped")
 
 def switchtoMQTT2():
@@ -174,11 +191,8 @@ def switchtoMQTT2():
 
     # QUT01_mqtt_conn = mqtt.Client()
     client2 = MQTTClient(client_id="test", server=THINGSBOARD_HOST, port=1883, user=QUT01_ACCESS_TOKEN, password=QUT01_ACCESS_TOKEN, keepalive=60)
-    # Set access token
-    #QUT01_mqtt_conn.username_pw_set(QUT01_ACCESS_TOKEN)
-
-    #Connect to Thingsboard using default MQTT port and 60 seconds keepalive intervals
-    #QUT01_mqtt_conn.connect(THINGSBOARD_HOST, 1883, 60)	# Sam: you need to make sure port 1883 of your thingsboard server is open
+   
+    #Connect to Thingsboard
     client2.connect()
 
     print(">>>connected to things platform<<<")
@@ -207,7 +221,7 @@ def switchtoMQTT2():
         client2.disconnect()   # ... disconnect the client and clean up.
         client2 = None
         global wlan # add globale so that wlan can be modified
-        wlan.disconnect() #
+        wlan.disconnect()
         wlan = None
         pycom.rgbled(0x000022)# Status blue: stopped
         print("MQTT stopped")
@@ -262,5 +276,5 @@ print(wlan.ifconfig()) #
 print(">>connected to hotspot<<")
 pycom.rgbled(0xff00f4) #ligt purple, wifi connected
 time.sleep(2)
-# switchToMQTT1()
-switchtoMQTT2()
+switchToParallelMQTT()
+# switchtoMQTT2()
