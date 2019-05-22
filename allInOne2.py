@@ -85,7 +85,6 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
         mf.close()
 
 def switchToMQTT1():
-   
 
     # BEGIN SETTINGS
     AIO_CLIENT_ID = "Charles"
@@ -96,10 +95,12 @@ def switchToMQTT1():
     AIO_CONTROL_FEED = "fipy/test"
     AIO_RANDOMS_FEED = "fipy/randoms"
 
+    # Setup thingsboard connection
+    THINGSBOARD_HOST = '203.101.225.130'
+    QUT01_ACCESS_TOKEN = 'test12345'
+
     # FUNCTIONS
-
     # Function to respond to messages from Adafruit IO
-
     def sub_cb(topic, msg):          # sub_cb means "callback subroutine"
         print((topic, msg))          # Outputs the message that was received. Debugging use.
 
@@ -122,19 +123,45 @@ def switchToMQTT1():
             latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
 
         gnssReadings = "Laitude and Longitude: {0},  Velocity: {1}, Orthometric height: {2}, Time in GMT: {3}, GPS Quality indicator: {4}, Number of active satellites: {5}, PDOP:{6} HDOP:{7} VDOP:{8}"\
-            .format(latlon, velocity, gpsQ, height, GMT, uniqsatNum, PDOP, HDOP, VDOP)
-        print("Publishing: {0} to {1} ... ".format(gnssReadings, AIO_RANDOMS_FEED), end='')
+            .format(latlon, velocity, gpsQ, height, GMT, uniqsatNum, PDOP, HDOP, VDOP)       
 
+        if 'Error' in latlon:
+            location = {'lat': latlon, 'lon': latlon}
+        elif 'N/A' in latlon:
+            location = {'lat': latlon, 'lon': latlon}
+        else:
+            temp1 = latlon.split(";")
+            Lat = float(temp1[0].replace("S","-").replace("N",""))
+            Lon = float(temp1[1].replace("E","").replace("W","-"))
+            location = {'lat': float(Lat), 'lon': float(Lon)}
+        
         try:
+            print("Publishing: {0} to {1} ... ".format(gnssReadings, AIO_RANDOMS_FEED), end='')
             client.publish(topic=AIO_RANDOMS_FEED, msg=str(gnssReadings))
             print("DONE")
+            time.sleep(0.5)
+            client2.publish(topic='v1/devices/me/attributes', msg=json.dumps(location))
+            print("coordinate sent: {0}".format(latlon))
 
         except Exception:
             print("FAILED")
 
         finally:
             print("------------------------------------------------------------------------------")
+    
 
+
+    # QUT01_mqtt_conn = mqtt.Client()
+    client2 = MQTTClient(client_id="test", server=THINGSBOARD_HOST, port=1883, user=QUT01_ACCESS_TOKEN, password=QUT01_ACCESS_TOKEN, keepalive=60)
+    # Set access token
+    #QUT01_mqtt_conn.username_pw_set(QUT01_ACCESS_TOKEN)
+
+    #Connect to Thingsboard using default MQTT port and 60 seconds keepalive intervals
+    #QUT01_mqtt_conn.connect(THINGSBOARD_HOST, 1883, 60)	# Sam: you need to make sure port 1883 of your thingsboard server is open
+    client2.connect()
+
+    print(">>>connected to things platform<<<")
+    pycom.rgbled(0x00ff00) #green
     # Use the MQTT protocol to connect to Adafruit IO
     client = MQTTClient(AIO_CLIENT_ID, AIO_SERVER, AIO_PORT, AIO_USER, AIO_KEY)
 
@@ -188,11 +215,16 @@ def switchtoMQTT2():
             try:
                 latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings.__next__() 
             except:
-                latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = "0;0"
-            temp1 = latlon.split(";")
-            Lat = float(temp1[0])
-            Lon = float(temp1[1])
-            location = {'lat': float(Lat), 'lon': float(Lon)}
+                latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
+            if 'Error' in latlon:
+                location = {'lat': latlon, 'lon': latlon}
+            elif 'N/A' in latlon:
+                location = {'lat': latlon, 'lon': latlon}
+            else:
+                temp1 = latlon.split(";")
+                Lat = float(temp1[0].replace("S","-").replace("N",""))
+                Lon = float(temp1[1].replace("E","").replace("W","-"))
+                location = {'lat': float(Lat), 'lon': float(Lon)}
             client2.publish(topic='v1/devices/me/attributes', msg=json.dumps(location))
             print("coordinate sent: {0}".format(latlon))
             time.sleep(2.5)
