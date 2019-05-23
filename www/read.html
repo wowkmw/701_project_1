@@ -6,9 +6,12 @@
 </head>
 <body style="background-color: lightgrey; text-align: center;">
 
-<h1 style="font-family: Arial, Helvetica, sans-serif; font-size: 250%; color: navy; "><b>===NEO-M8L Sensor Readings===</b></h1>
-<div id="result" style="font-weight: bold; color: rgb(0, 94, 0); font-size: 100%; font-family: Consolas, 'Courier New', monospace; margin: 20px">
-    Waiting for sensor readings...<br />If this page doesn't refresh in 10 seconds<br />Make sure the M8L module is correctly connected<br />
+<h1 style="font-family: Arial, Helvetica, sans-serif; font-size: 250%; color: navy; ">
+    <b>===NEO-M8L Sensor Readings===</b></h1>
+<div id="result" style="font-weight: bold; color: rgb(0, 94, 0); font-size: 100%; font-family: Consolas, 
+'Courier New', monospace; margin: 20px">
+    Waiting for sensor readings...<br />If this page doesn't refresh in 10 seconds<br />
+    Make sure the M8L module is correctly connected<br />
     and powered on!</div>
 
 <script>
@@ -19,7 +22,8 @@ if(typeof(EventSource) !== 'undefined') {
     };
 } 
 else {
-    document.getElementById("result").innerHTML = "It appears that your browser does not support server-sent events...";
+    document.getElementById("result").innerHTML = 
+    "It appears that your browser does not support server-sent events...";
 }
 </script>
 
