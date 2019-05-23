@@ -175,6 +175,8 @@ def switchToParallelMQTT():
 
     finally:                  # If an exception is thrown ...
         client.disconnect()   # ... disconnect the client and clean up.
+        client2.disconnect()
+        client2 = None
         client = None
         global wlan # add globale so that wlan can be modified
         wlan.disconnect()
@@ -182,76 +184,32 @@ def switchToParallelMQTT():
         pycom.rgbled(0x000022) # Status blue: stopped
         print("MQTT stopped")
 
-def switchtoMQTT2():
-    
-    # Setup thingsboard connection
-    THINGSBOARD_HOST = '203.101.225.130'
-    QUT01_ACCESS_TOKEN = 'test12345'
-
-
-    # QUT01_mqtt_conn = mqtt.Client()
-    client2 = MQTTClient(client_id="test", server=THINGSBOARD_HOST, port=1883, user=QUT01_ACCESS_TOKEN, password=QUT01_ACCESS_TOKEN, keepalive=60)
-   
-    #Connect to Thingsboard
-    client2.connect()
-
-    print(">>>connected to things platform<<<")
-    pycom.rgbled(0x00ff00) #green
-    try:
-        while True:
-            try:
-                latlon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = parsedReadings.__next__() 
-            except:
-                latlon = velocity = gpsQ = height = GMT = PDOP = HDOP = VDOP = uniqsatNum = 'Error occurred, please restart FiPy...'
-            if 'Error' in latlon:
-                location = {'lat': latlon, 'lon': latlon}
-            elif 'N/A' in latlon:
-                location = {'lat': latlon, 'lon': latlon}
-            else:
-                temp1 = latlon.split(";")
-                Lat = float(temp1[0].replace("S","-").replace("N",""))
-                Lon = float(temp1[1].replace("E","").replace("W","-"))
-                location = {'lat': float(Lat), 'lon': float(Lon)}
-            client2.publish(topic='v1/devices/me/attributes', msg=json.dumps(location))
-            print("coordinate sent: {0}".format(latlon))
-            time.sleep(2.5)
-
-    except KeyboardInterrupt: 		# catches the ctrl-c command, which breaks the loop above
-        print("Continuous polling stopped")
-        client2.disconnect()   # ... disconnect the client and clean up.
-        client2 = None
-        global wlan # add globale so that wlan can be modified
-        wlan.disconnect()
-        wlan = None
-        pycom.rgbled(0x000022)# Status blue: stopped
-        print("MQTT stopped")
-
-
 print(">>starting web server<<")
 pycom.rgbled(0xff0000) #red
 time.sleep(1)
 
-uart = UART(1, baudrate = 115200, pins = ('P3','P4'))
-uart.init(115200, bits = 8, parity = None, stop = 1)
-parsedReadings = parserGen.output(uart)
+uart = UART(1, baudrate = 115200, pins = ('P3','P4')) # create uart object
+uart.init(115200, bits = 8, parity = None, stop = 1) # init reading
+parsedReadings = parserGen.output(uart) # generator object yields parsed readings
 
+# configure server
 routeHandlers = [ ( '/read', 'GET',  _httpHandlerNEOGet1s ),
                 ( "/test",	"GET",	_httpHandlerTestGet ),
                 ( "/test",	"POST",	_httpHandlerTestPost )]
 srv = MicroWebSrv(routeHandlers=routeHandlers, webPath = '/flash/www/')
 time.sleep(0.25)
-srv.Start(threaded = True)
+srv.Start(threaded = True) # start server
 pycom.rgbled(0x00ff00) #green
 print(">>local webServer started<<")
 time.sleep(0.25)
-mf = open("status.txt", "w")
+mf = open("status.txt", "w") # use to determine mqtt switch
 mf.close()
 while True:
     time.sleep(1)
     condf = open("status.txt", "r")
     cond = condf.read()
     condf.close()
-    if cond == "yes":
+    if cond == "yes": # use to determine mqtt switch
         print(">>stopping server<<")
         pycom.rgbled(0xff0000) #red
         # uart.deinit()
@@ -277,4 +235,3 @@ print(">>connected to hotspot<<")
 pycom.rgbled(0xff00f4) #ligt purple, wifi connected
 time.sleep(2)
 switchToParallelMQTT()
-# switchtoMQTT2()

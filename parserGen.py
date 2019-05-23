@@ -103,21 +103,22 @@ def dataParse(reading):
 
 def output(UT):
     while True:
-        pycom.rgbled(0xff6600)
+        pycom.rgbled(0xff6600) # yellow
         counter = 0
-        tempStore = []
+        tempStore = [] # store up to 5 reads, reset at each round
         flushCache = UT.readall() #flush cache on m8l to prevent erroneous readings
-        while counter <= 4:
+        while counter <= 4: # read the first five lines of raw data
             try:
+                # keep reading data until the first stream of raw data is received
                 data = UT.readline()
                 if data:
-                    decoded = data.decode("utf-8")
+                    decoded = data.decode("utf-8") #the raw reading from uart needs to be decoded
                     tempStore.append(decoded)
                     counter += 1
-                    time.sleep(0.03)
+                    time.sleep(0.03) # avoid sensor overload
             except:
-                pycom.rgbled(0xff0000)
+                pycom.rgbled(0xff0000) # red
                 print("Error")    
         pycom.rgbled(0x00ff00)
-        LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = dataParse(tempStore)
+        LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum = dataParse(tempStore) # parse decoded raw readings
         yield LatLon, velocity, gpsQ, height, GMT, PDOP, HDOP, VDOP, uniqsatNum # generate readings
