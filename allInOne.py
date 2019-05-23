@@ -41,8 +41,8 @@ def _httpHandlerTestGet(httpClient, httpResponse) :
         	<meta charset="UTF-8" />
             <title>MODE SWITCH</title>
         </head>
-        <body>
-            <h1><b>MODE SWITCH</b></h1>
+        <body style="background-color: lightgrey; text-align: center;">
+            <h1><b>===MODE SWITCH===</b></h1>
             Your IP address = %s
             <br />
 			<form action="/test" method="post" accept-charset="ISO-8859-1">
@@ -67,8 +67,8 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
 			<meta charset="UTF-8" />
             <title>MODE SWITCH</title>
         </head>
-        <body>
-            <h1><b>MODE SWITCH</b></h1>
+        <body style="background-color: lightgrey; text-align: center;">
+            <h1><b>===MODE SWITCH===</b></h1>
             Choice = %s<br />
         </body>
     </html>
