@@ -1,2 +1,4 @@
 # 701_project_1
-# student project repository for IoT applications
+# IoT framework for GNSS Devices
+
+# student project repository
