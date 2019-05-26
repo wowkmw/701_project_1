@@ -230,7 +230,7 @@ while not wlan.isconnected(): #retry every 5 seconds
     time.sleep(5)
 print(">>waiting for IP and DNS configuration<<")
 pycom.rgbled(0xff00f4) #ligt purple, wifi connected
-while True: # ensure that hotspot's ip config is correctly setted up
+while True: # ensure that hotspot's ip config is correctly set up
     ipCond = wlan.ifconfig()[1]
     if ipCond == '0.0.0.0':
         time.sleep(0.5)
