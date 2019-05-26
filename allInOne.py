@@ -168,7 +168,7 @@ def switchToParallelMQTT():
         while True:              # Repeat this loop forever
             client.check_msg()# Action a message if one is received. Non-blocking.
             send_readings()     # Send current GNSS readings
-            time.sleep(5)  # publish every 5 seconds
+            time.sleep(3)  # publish every 3 seconds
 
     except KeyboardInterrupt: 		# catches the ctrl-c command, which breaks the loop above
             print("Continuous polling stopped")
@@ -212,14 +212,13 @@ while True:
     if cond == "yes": # use to determine mqtt switch
         print(">>stopping server<<")
         pycom.rgbled(0xff0000) #red
-        # uart.deinit()
         time.sleep(1)
-        srv.Stop()
+        srv.Stop() #stop server
         print(">>local server stopped<<")
         time.sleep(1)
         break
     else:
-        time.sleep(1)
+        pass
 print(">>changing WIFI mode<<")
 # setup as a station
 wlan = network.WLAN(mode=network.WLAN.STA)
@@ -229,9 +228,16 @@ time.sleep(5)
 while not wlan.isconnected(): #retry every 5 seconds
     wlan.connect('TPU4G_L3TN', auth=(network.WLAN.WPA2, '56156271'))
     time.sleep(5)
-time.sleep(10) #wait for ipconfig set-up
-print(wlan.ifconfig()) #
-print(">>connected to hotspot<<")
+print(">>waiting for IP and DNS configuration<<")
 pycom.rgbled(0xff00f4) #ligt purple, wifi connected
-time.sleep(2)
+while True: # ensure that hotspot's ip config is correctly setted up
+    ipCond = wlan.ifconfig()[1]
+    if ipCond == '0.0.0.0':
+        time.sleep(0.5)
+        pass
+    else:
+        break
+print(wlan.ifconfig())
+print(">>connected to hotspot<<")
+time.sleep(1)
 switchToParallelMQTT()
