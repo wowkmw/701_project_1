@@ -1,5 +1,5 @@
 # IoT Framework for GNSS Devices
-![NEO-M8L](www/NEO-M8L.png "NEO-M8L" =270x220)![fipySide](www/fipySide.png "fipySide" =430x203)
+![NEO-M8L](www/NEO-M8L.png "NEO-M8L")
 # Student project repository for QUT IFN701
 
 This is a repository of my IFN701 project.
