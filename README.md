@@ -5,4 +5,4 @@
 This is a repository of the IFN701 project.
 The MicroPython codes are designed to run on Pycom FiPy
 modules with NEO-M8L GNSS module attached.
-Additionally, a saperate WiFi access point is required.
+Additionally, a separate WiFi access point is required.
